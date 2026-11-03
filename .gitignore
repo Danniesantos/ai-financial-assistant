@@ -1,0 +1,51 @@
+
+# Java
+*.class
+*.log
+*.ctxt
+.mtj.tmp/
+
+# Package files
+*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# JVM crash logs
+hs_err_pid*
+replay_pid*
+*.hprof
+
+# Gradle
+.gradle/
+**/build/
+gradle-app.setting
+!gradle-wrapper.jar
+!gradle-wrapper.properties
+.gradletasknamecache
+
+# IDE
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+.project
+.classpath
+.settings/
+.factorypath
+.springBeans
+.sts4-cache
+out/
+
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+
+# Operating system
+.DS_Store
+Thumbs.db
