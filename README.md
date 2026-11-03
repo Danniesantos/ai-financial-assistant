@@ -1,66 +1,78 @@
 # AI Financial Assistant API
 
-An AI-powered financial assistant built with Java and Spring Boot, designed to manage financial transactions through natural language and voice interactions.
+An AI-powered financial assistant built with Java and Spring Boot. The project aims to help users manage financial transactions, understand their spending habits, and receive financial insights through text and audio interactions.
 
-The project explores the integration of Large Language Models (LLMs) with backend applications, using Spring AI and Tool Calling to interpret user requests and execute financial operations.
+## Technologies
 
-## Project Overview
-
-The AI Financial Assistant API aims to provide an intelligent way to interact with personal financial data.
-
-Users will be able to send voice commands, which will be transcribed and interpreted by an AI model. Based on the user's intent, the assistant will execute operations such as creating and retrieving financial transactions.
-
-The project will also explore AI-generated financial summaries and insights.
-
-## Main Goals
-
-- Process audio input and convert speech into text.
-- Interpret natural language requests using an LLM.
-- Execute financial operations through AI Tool Calling.
-- Create and retrieve financial transactions.
-- Persist financial data in PostgreSQL.
-- Generate voice responses.
-- Provide intelligent financial summaries and insights.
-
-## Technology Stack
-
-| Technology | Purpose |
-|---|---|
-| Java 21 | Main programming language |
-| Spring Boot | Backend framework |
-| Spring AI | AI integration |
-| OpenAI | Language model and AI services |
-| Spring Web | REST API |
-| Spring Data JPA | Data persistence |
-| PostgreSQL | Relational database |
-| Flyway | Database migrations |
-| Bean Validation | Input validation |
-| JUnit 5 | Unit and integration testing |
-| Mockito | Mocking and isolated tests |
-| Springdoc OpenAPI | API documentation |
-| Gradle | Build automation |
-| Docker | Database containerization |
+- Java 21
+- Spring Boot 4.1.1
+- Gradle
+- PostgreSQL 17
+- Docker
+- Spring Data JPA
+- Flyway
+- JUnit 5
+- GitHub Actions
 
 ## Architecture
 
-The application will follow Clean Architecture principles, separating business rules from infrastructure and external dependencies.
+The project follows **Clean Architecture**, separating business rules from external frameworks and infrastructure concerns.
 
-Planned package organization:
+The goal is to keep the domain independent, organized, and easy to maintain and test.
 
-```text
-com.financialassistant.ai_financial_assistant
-├── domain
-│   ├── model
-│   ├── valueobject
-│   └── repository
-├── application
-│   ├── usecase
-│   └── port
-└── infrastructure
-    ├── web
-    ├── persistence
-    └── ai
-```
+## Current Features
+
+### Domain Layer
+
+The initial domain implementation includes:
+
+- **Money:** Value Object for representing monetary values.
+- **TransactionType:** Defines income and expense transaction types.
+- **Category:** Represents financial transaction categories.
+- **FinancialTransaction:** Represents a financial transaction.
+
+### Testing
+
+Unit tests have been implemented for the domain components, including:
+
+- Money
+- Category
+- FinancialTransaction
+
+## Planned Features
+
+- Financial transaction management.
+- Income and expense summaries.
+- Financial analysis using AI.
+- Text-based interaction with the assistant.
+- Audio input and interaction.
+- Integration with OpenAI through Spring AI.
+- REST API endpoints.
+- Data persistence with PostgreSQL.
+
+## Database
+
+The project uses PostgreSQL 17 running in Docker.
+
+Database versioning and migration management are handled by Flyway.
+
+The application uses Hibernate with `ddl-auto: validate`, keeping database schema management under Flyway.
+
+## Continuous Integration
+
+The project uses **GitHub Actions** to automate testing and build validation.
+
+The workflow runs on pushes and pull requests to the `main` and `develop` branches.
+
+Pipeline steps:
+
+- Checkout repository.
+- Set up Java 21 (Temurin).
+- Configure Gradle.
+- Run automated tests.
+- Build the application.
+
+Workflow file: `.github/workflows/ci.yml`.
 
 ## Getting Started
 
@@ -70,7 +82,7 @@ com.financialassistant.ai_financial_assistant
 - Docker Desktop
 - Git
 
-### Database Setup
+### Environment Configuration
 
 Clone the repository:
 
@@ -81,7 +93,9 @@ cd ai-financial-assistant
 
 Create your local `.env` file based on `.env.example` and configure your database credentials.
 
-Start PostgreSQL:
+**Important:** The `.env` file contains local configuration and should not be committed to Git.
+
+### Start PostgreSQL
 
 ```bash
 docker compose up -d
@@ -89,13 +103,14 @@ docker compose up -d
 
 ### Running the Application
 
-Configure the required environment variables in your terminal:
+In PowerShell, load the environment variables from `.env`:
 
 ```powershell
-$env:POSTGRES_PORT="5433"
-$env:POSTGRES_DB="financial_assistant"
-$env:POSTGRES_USER="financial_user"
-$env:POSTGRES_PASSWORD="your_local_password"
+Get-Content .env | ForEach-Object {
+    if ($_ -match '^([^#][^=]*)=(.*)$') {
+        [Environment]::SetEnvironmentVariable($matches[1], $matches[2], 'Process')
+    }
+}
 ```
 
 Run the application:
@@ -104,7 +119,7 @@ Run the application:
 .\gradlew.bat bootRun
 ```
 
-The API will be available at:
+The application will be available at:
 
 ```text
 http://localhost:8080
@@ -112,36 +127,34 @@ http://localhost:8080
 
 ### Health Check
 
-To verify that the application is running:
+The application provides a health endpoint through Spring Boot Actuator:
 
-```http
-GET http://localhost:8080/actuator/health
+```text
+http://localhost:8080/actuator/health
 ```
-
-## Development Roadmap
-
-- [x] Initial Spring Boot project setup
-- [x] PostgreSQL configuration with Docker
-- [x] Database connectivity
-- [ ] Initial database migrations
-- [ ] Domain modeling and business rules
-- [ ] Financial transaction management
-- [ ] REST API endpoints
-- [ ] Automated tests
-- [ ] Spring AI integration
-- [ ] AI Tool Calling
-- [ ] Audio transcription
-- [ ] Voice response generation
-- [ ] AI-powered financial summaries and insights
-- [ ] API documentation
-- [ ] Final documentation and deployment preparation
 
 ## Project Status
 
-<escape>🚧</escape> **In Development**
+The project is under development.
 
-This project is being developed as part of a practical learning journey focused on Java, Spring Boot, AI integration, and backend software engineering.
+- [x] Initial project configuration.
+- [x] PostgreSQL configuration with Docker.
+- [x] Flyway configuration.
+- [x] Domain layer implementation.
+- [x] Domain unit tests.
+- [x] GitHub Actions CI workflow.
+- [x] Automated test and build execution in CI.
+- [ ] Application layer.
+- [ ] Infrastructure layer.
+- [ ] REST API endpoints.
+- [ ] Financial transaction persistence.
+- [ ] Spring AI and OpenAI integration.
+- [ ] AI-powered financial analysis and summaries.
+- [ ] Audio interaction.
+- [ ] Documentation and final improvements.
 
-## License
+## Author
 
-This project is currently under development. License information will be added later.
+**Daniela Santos**
+
+[GitHub](https://github.com/Danniesantos)
