@@ -7,6 +7,7 @@ import com.financialassistant.ai_financial_assistant.domain.valueobject.Money;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.UUID;
 
@@ -268,6 +269,68 @@ class FinancialTransactionTest {
         transaction.activate();
 
         assertEquals(updatedAt, transaction.getUpdatedAt());
+    }
+
+    @Test
+    void shouldReconstituteTransactionWithOriginalData() {
+        UUID id = UUID.randomUUID();
+        Instant createdAt = Instant.parse("2026-01-10T10:00:00Z");
+        Instant updatedAt = Instant.parse("2026-01-15T10:00:00Z");
+
+        Category category = createExpenseCategory();
+
+        FinancialTransaction transaction = FinancialTransaction.reconstitute(
+                id,
+                "Supermarket purchase",
+                createMoney("150.00"),
+                category,
+                LocalDate.of(2026, 11, 3),
+                true,
+                createdAt,
+                updatedAt
+        );
+
+        assertEquals(id, transaction.getId());
+        assertEquals("Supermarket purchase", transaction.getDescription());
+        assertEquals(createMoney("150.00"), transaction.getAmount());
+        assertEquals(category, transaction.getCategory());
+        assertEquals(LocalDate.of(2026, 11, 3), transaction.getTransactionDate());
+        assertTrue(transaction.isActive());
+        assertEquals(createdAt, transaction.getCreatedAt());
+        assertEquals(updatedAt, transaction.getUpdatedAt());
+    }
+
+    @Test
+    void shouldReconstituteInactiveTransaction() {
+        FinancialTransaction transaction = FinancialTransaction.reconstitute(
+                UUID.randomUUID(),
+                "Supermarket purchase",
+                createMoney("150.00"),
+                createExpenseCategory(),
+                LocalDate.of(2026, 11, 3),
+                false,
+                Instant.now(),
+                Instant.now()
+        );
+
+        assertFalse(transaction.isActive());
+    }
+
+    @Test
+    void shouldRejectNullIdWhenReconstitutingTransaction() {
+        assertThrows(
+                InvalidFinancialTransactionException.class,
+                () -> FinancialTransaction.reconstitute(
+                        null,
+                        "Supermarket purchase",
+                        createMoney("150.00"),
+                        createExpenseCategory(),
+                        LocalDate.now(),
+                        true,
+                        Instant.now(),
+                        Instant.now()
+                )
+        );
     }
 
 }

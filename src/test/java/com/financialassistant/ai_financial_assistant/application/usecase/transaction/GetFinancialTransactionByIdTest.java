@@ -36,9 +36,9 @@ class GetFinancialTransactionByIdTest {
     @DisplayName("Should return financial transaction when ID exists")
     void shouldReturnFinancialTransactionWhenIdExists() {
 
-        UUID transactionId = UUID.randomUUID();
-
         FinancialTransaction transaction = createTransaction();
+
+        UUID transactionId = transaction.getId();
 
         when(transactionRepository.findById(transactionId))
                 .thenReturn(Optional.of(transaction));
@@ -56,7 +56,9 @@ class GetFinancialTransactionByIdTest {
     @DisplayName("Should throw exception when transaction does not exist")
     void shouldThrowExceptionWhenTransactionDoesNotExist() {
 
-        UUID transactionId = UUID.randomUUID();
+        FinancialTransaction transaction = createTransaction();
+
+        UUID transactionId = transaction.getId();
 
         when(transactionRepository.findById(transactionId))
                 .thenReturn(Optional.empty());

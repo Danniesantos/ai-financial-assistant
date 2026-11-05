@@ -11,6 +11,7 @@ import com.financialassistant.ai_financial_assistant.domain.valueobject.Money;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -75,11 +76,20 @@ class CreateFinancialTransactionTest {
         assertNotNull(result);
         assertEquals(description, result.getDescription());
         assertEquals(amount, result.getAmount().getAmount());
-        assertEquals(categoryId, category.getId());
+        assertEquals(categoryId, result.getCategory().getId());
         assertEquals(transactionDate, result.getTransactionDate());
 
-        verify(categoryRepository).findById(categoryId);
-        verify(transactionRepository).save(any(FinancialTransaction.class));
+        ArgumentCaptor<FinancialTransaction> captor =
+                ArgumentCaptor.forClass(FinancialTransaction.class);
+
+        verify(transactionRepository).save(captor.capture());
+
+        FinancialTransaction savedTransaction = captor.getValue();
+
+        assertEquals(description, savedTransaction.getDescription());
+        assertEquals(amount, savedTransaction.getAmount().getAmount());
+        assertEquals(categoryId, savedTransaction.getCategory().getId());
+        assertEquals(transactionDate, savedTransaction.getTransactionDate());
     }
 
     @Test
