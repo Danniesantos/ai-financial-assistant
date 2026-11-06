@@ -61,6 +61,56 @@ public class FinancialTransaction {
         this.updatedAt = this.createdAt;
     }
 
+    private FinancialTransaction(
+            UUID id,
+            String description,
+            Money amount,
+            Category category,
+            LocalDate transactionDate,
+            boolean active,
+            Instant createdAt,
+            Instant updatedAt
+    ) {
+        if (id == null || description == null || description.isBlank()
+                || amount == null || category == null || transactionDate == null
+                || createdAt == null || updatedAt == null) {
+            throw new InvalidFinancialTransactionException(
+                    "Invalid financial transaction data."
+            );
+        }
+
+        this.id = id;
+        this.description = description.trim();
+        this.amount = amount;
+        this.category = category;
+        this.transactionDate = transactionDate;
+        this.active = active;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
+    }
+
+    public static FinancialTransaction reconstitute(
+            UUID id,
+            String description,
+            Money amount,
+            Category category,
+            LocalDate transactionDate,
+            boolean active,
+            Instant createdAt,
+            Instant updatedAt
+    ) {
+        return new FinancialTransaction(
+                id,
+                description,
+                amount,
+                category,
+                transactionDate,
+                active,
+                createdAt,
+                updatedAt
+        );
+    }
+
     public UUID getId() {
         return id;
     }
