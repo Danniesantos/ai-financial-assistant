@@ -162,4 +162,55 @@ class CategoryTest {
 
         assertFalse(category.isDefault());
     }
+
+    @Test
+    void shouldReconstituteCategoryWithOriginalData() {
+        UUID id = UUID.randomUUID();
+        Instant createdAt = Instant.parse("2026-01-10T10:00:00Z");
+
+        Category category = Category.reconstitute(
+                id,
+                "Food",
+                TransactionType.EXPENSE,
+                true,
+                true,
+                createdAt
+        );
+
+        assertEquals(id, category.getId());
+        assertEquals("Food", category.getName());
+        assertEquals(TransactionType.EXPENSE, category.getType());
+        assertTrue(category.isDefault());
+        assertTrue(category.isActive());
+        assertEquals(createdAt, category.getCreatedAt());
+    }
+
+    @Test
+    void shouldReconstituteInactiveCategory() {
+        Category category = Category.reconstitute(
+                UUID.randomUUID(),
+                "Food",
+                TransactionType.EXPENSE,
+                false,
+                false,
+                Instant.now()
+        );
+
+        assertFalse(category.isActive());
+    }
+
+    @Test
+    void shouldRejectNullIdWhenReconstitutingCategory() {
+        assertThrows(
+                InvalidCategoryException.class,
+                () -> Category.reconstitute(
+                        null,
+                        "Food",
+                        TransactionType.EXPENSE,
+                        false,
+                        true,
+                        Instant.now()
+                )
+        );
+    }
 }

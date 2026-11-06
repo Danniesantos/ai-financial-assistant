@@ -40,6 +40,47 @@ public class Category {
         this.createdAt = Instant.now();
     }
 
+    private Category(
+            UUID id,
+            String name,
+            TransactionType type,
+            boolean isDefault,
+            boolean active,
+            Instant createdAt
+    ) {
+        if (id == null || name == null || name.isBlank()
+                || type == null || createdAt == null) {
+            throw new InvalidCategoryException(
+                    "Invalid category data."
+            );
+        }
+
+        this.id = id;
+        this.name = name.trim();
+        this.type = type;
+        this.isDefault = isDefault;
+        this.active = active;
+        this.createdAt = createdAt;
+    }
+
+    public static Category reconstitute(
+            UUID id,
+            String name,
+            TransactionType type,
+            boolean isDefault,
+            boolean active,
+            Instant createdAt
+    ) {
+        return new Category(
+                id,
+                name,
+                type,
+                isDefault,
+                active,
+                createdAt
+        );
+    }
+
     public UUID getId() {
         return id;
     }
