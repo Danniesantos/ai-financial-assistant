@@ -1,68 +1,104 @@
 # AI Financial Assistant API
 
-An AI-powered financial assistant built with Java and Spring Boot. The project aims to help users manage financial transactions, understand their spending habits, and receive financial insights through text and audio interactions.
+An AI-powered financial assistant built with Java and Spring Boot. The project aims to help users manage financial transactions, understand their spending habits, and receive personalized financial insights through text and audio interactions.
+
+The application is being developed with a focus on clean code, maintainability, automated testing, and separation of concerns.
 
 ## Technologies
 
-- Java 21
-- Spring Boot 4.1.1
-- Gradle
-- PostgreSQL 17
-- Docker
-- Spring Data JPA
-- Flyway
-- JUnit 5
-- GitHub Actions
+- **Java 21**
+- **Spring Boot 4.1.1**
+- **Gradle**
+- **PostgreSQL 17**
+- **Docker Compose**
+- **Spring Data JPA**
+- **Hibernate**
+- **Flyway**
+- **Spring Boot Actuator**
+- **JUnit 5**
+- **Mockito**
+- **Testcontainers**
+- **GitHub Actions**
+
+### Planned Technologies
+
+- Spring AI
+- OpenAI API
 
 ## Architecture
 
-The project follows **Clean Architecture**, separating business rules from external frameworks and infrastructure concerns.
+The project follows **Clean Architecture**, separating business rules from frameworks, databases, and external services.
 
-The goal is to keep the domain independent, organized, and easy to maintain and test.
+The application is organized into three main layers:
 
-## Current Features
+- **Domain:** Contains business entities, value objects, enums, domain exceptions, and repository contracts.
+- **Application:** Contains use cases responsible for orchestrating business operations.
+- **Infrastructure:** Contains persistence entities, mappers, Spring Data repositories, and repository implementations.
+
+This structure helps keep business rules independent of external technologies, making the application easier to maintain, test, and extend.
+
+## Implemented Features
 
 ### Domain Layer
 
-The initial domain implementation includes:
+The initial domain model includes:
 
-- **Money:** Value Object for representing monetary values.
+- **Money:** Value Object for representing and validating monetary values.
 - **TransactionType:** Defines income and expense transaction types.
-- **Category:** Represents financial transaction categories.
-- **FinancialTransaction:** Represents a financial transaction.
+- **Category:** Represents financial transaction categories, including activation and deactivation.
+- **FinancialTransaction:** Represents a financial transaction and its business rules.
+
+### Application Layer
+
+Use cases currently implemented:
+
+- Create financial transactions.
+- Retrieve all financial transactions.
+- Retrieve a financial transaction by ID.
+- Retrieve active financial transactions.
+- Activate financial transactions.
+- Deactivate financial transactions.
+
+### Infrastructure Layer
+
+- JPA entities for categories and financial transactions.
+- Money persistence through an embeddable value.
+- Mappers between domain models and persistence entities.
+- Repository implementations using Spring Data JPA.
+- PostgreSQL persistence.
+- Database schema versioning with Flyway.
 
 ### Testing
 
-Unit tests have been implemented for the domain components, including:
+Automated tests cover the domain, application, and persistence layers.
 
-- Money
-- Category
-- FinancialTransaction
-
-## Planned Features
-
-- Financial transaction management.
-- Income and expense summaries.
-- Financial analysis using AI.
-- Text-based interaction with the assistant.
-- Audio input and interaction.
-- Integration with OpenAI through Spring AI.
-- REST API endpoints.
-- Data persistence with PostgreSQL.
+- **Unit tests:** JUnit 5, Mockito, and AssertJ.
+- **Integration tests:** Testcontainers with PostgreSQL 17.
+- Repository tests validate persistence operations, entity mapping, and database interactions.
 
 ## Database
 
-The project uses PostgreSQL 17 running in Docker.
+The application uses **PostgreSQL 17**, running in Docker.
 
-Database versioning and migration management are handled by Flyway.
+Database schema creation and versioning are managed by **Flyway**.
 
-The application uses Hibernate with `ddl-auto: validate`, keeping database schema management under Flyway.
+Hibernate is configured with:
+
+```yaml
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+```
+
+This configuration keeps schema management under Flyway and prevents Hibernate from automatically modifying the database structure.
 
 ## Continuous Integration
 
 The project uses **GitHub Actions** to automate testing and build validation.
 
-The workflow runs on pushes and pull requests to the `main` and `develop` branches.
+The workflow is configured to run on pushes and pull requests targeting the `main` and `develop` branches.
 
 Pipeline steps:
 
@@ -82,28 +118,31 @@ Workflow file: `.github/workflows/ci.yml`.
 - Docker Desktop
 - Git
 
-### Environment Configuration
-
-Clone the repository:
+### 1. Clone the repository
 
 ```bash
 git clone https://github.com/Danniesantos/ai-financial-assistant.git
 cd ai-financial-assistant
 ```
 
-Create your local `.env` file based on `.env.example` and configure your database credentials.
+### 2. Configure environment variables
 
-**Important:** The `.env` file contains local configuration and should not be committed to Git.
+Create a local `.env` file using `.env.example` as a reference.
 
-### Start PostgreSQL
+Configure the database credentials and connection settings.
 
-```bash
-docker compose up -d
+Example:
+
+```env
+POSTGRES_DB=financial_assistant
+POSTGRES_USER=financial_user
+POSTGRES_PASSWORD=your_password
+POSTGRES_PORT=5433
 ```
 
-### Running the Application
+**Important:** The `.env` file contains local configuration and must not be committed to Git.
 
-In PowerShell, load the environment variables from `.env`:
+Spring Boot does not automatically load `.env` files. On Windows PowerShell, load the variables into the current terminal session:
 
 ```powershell
 Get-Content .env | ForEach-Object {
@@ -113,7 +152,17 @@ Get-Content .env | ForEach-Object {
 }
 ```
 
-Run the application:
+### 3. Start PostgreSQL
+
+From the project root, run:
+
+```bash
+docker compose up -d
+```
+
+### 4. Run the application
+
+On Windows PowerShell:
 
 ```powershell
 .\gradlew.bat bootRun
@@ -121,37 +170,59 @@ Run the application:
 
 The application will be available at:
 
-```text
-http://localhost:8080
+`http://localhost:8080`
+
+### 5. Check application health
+
+The project uses Spring Boot Actuator to expose a health endpoint:
+
+`http://localhost:8080/actuator/health`
+
+### 6. Run automated tests
+
+```powershell
+.\gradlew.bat test
 ```
 
-### Health Check
+Integration tests use Testcontainers and require Docker to be available.
 
-The application provides a health endpoint through Spring Boot Actuator:
+### 7. Build the application
 
-```text
-http://localhost:8080/actuator/health
+```powershell
+.\gradlew.bat build
 ```
 
 ## Project Status
 
-The project is under development.
+The project is currently under development.
+
+### Completed
 
 - [x] Initial project configuration.
-- [x] PostgreSQL configuration with Docker.
-- [x] Flyway configuration.
+- [x] PostgreSQL configuration with Docker Compose.
+- [x] Flyway configuration and initial database migration.
 - [x] Domain layer implementation.
 - [x] Domain unit tests.
-- [x] GitHub Actions CI workflow.
-- [x] Automated test and build execution in CI.
-- [ ] Application layer.
-- [ ] Infrastructure layer.
+- [x] Application use cases for financial transactions.
+- [x] Application unit tests.
+- [x] Infrastructure persistence entities and mappers.
+- [x] Repository adapters using Spring Data JPA.
+- [x] Persistence integration tests with Testcontainers.
+- [x] GitHub Actions CI workflow configuration.
+
+### In Progress / Planned
+
+- [ ] Category management use cases.
 - [ ] REST API endpoints.
-- [ ] Financial transaction persistence.
+- [ ] HTTP request and response DTOs.
+- [ ] Request validation and centralized exception handling.
+- [ ] Financial summaries and aggregation.
 - [ ] Spring AI and OpenAI integration.
 - [ ] AI-powered financial analysis and summaries.
-- [ ] Audio interaction.
-- [ ] Documentation and final improvements.
+- [ ] Spring AI Tool Calling.
+- [ ] Audio input and interaction.
+- [ ] End-to-end and API tests.
+- [ ] Final documentation and improvements.
 
 ## Author
 
