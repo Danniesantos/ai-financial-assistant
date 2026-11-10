@@ -6,19 +6,20 @@ The application is being developed with a focus on clean code, maintainability, 
 
 ## Technologies
 
-- **Java 21**
-- **Spring Boot 4.1.1**
-- **Gradle**
-- **PostgreSQL 17**
-- **Docker Compose**
-- **Spring Data JPA**
-- **Hibernate**
-- **Flyway**
-- **Spring Boot Actuator**
-- **JUnit 5**
-- **Mockito**
-- **Testcontainers**
-- **GitHub Actions**
+- Java 21
+- Spring Boot 4.1.1
+- Gradle
+- PostgreSQL 17
+- Docker Compose
+- Spring Data JPA
+- Hibernate
+- Flyway
+- Spring Boot Actuator
+- JUnit 5
+- Mockito
+- AssertJ
+- Testcontainers
+- GitHub Actions
 
 ### Planned Technologies
 
@@ -27,13 +28,14 @@ The application is being developed with a focus on clean code, maintainability, 
 
 ## Architecture
 
-The project follows **Clean Architecture**, separating business rules from frameworks, databases, and external services.
+The project follows Clean Architecture, separating business rules from frameworks, databases, and external services.
 
-The application is organized into three main layers:
+The application is organized into four main layers:
 
 - **Domain:** Contains business entities, value objects, enums, domain exceptions, and repository contracts.
 - **Application:** Contains use cases responsible for orchestrating business operations.
 - **Infrastructure:** Contains persistence entities, mappers, Spring Data repositories, and repository implementations.
+- **Presentation:** Contains REST controllers, HTTP request and response DTOs, validation, and centralized exception handling.
 
 This structure helps keep business rules independent of external technologies, making the application easier to maintain, test, and extend.
 
@@ -52,12 +54,18 @@ The initial domain model includes:
 
 Use cases currently implemented:
 
+**Financial Transactions**
 - Create financial transactions.
 - Retrieve all financial transactions.
 - Retrieve a financial transaction by ID.
 - Retrieve active financial transactions.
 - Activate financial transactions.
 - Deactivate financial transactions.
+
+**Categories**
+- Create categories.
+- Retrieve all categories.
+- Retrieve active categories.
 
 ### Infrastructure Layer
 
@@ -68,19 +76,50 @@ Use cases currently implemented:
 - PostgreSQL persistence.
 - Database schema versioning with Flyway.
 
-### Testing
+### REST API
 
-Automated tests cover the domain, application, and persistence layers.
+The application exposes REST endpoints for managing categories and financial transactions.
+
+**Categories**
+
+| Method | Endpoint | Description |
+|---|---|---|
+| POST | `/api/categories` | Create a category |
+| GET | `/api/categories` | Retrieve all categories |
+| GET | `/api/categories/active` | Retrieve active categories |
+
+**Financial Transactions**
+
+| Method | Endpoint | Description |
+|---|---|---|
+| POST | `/api/transactions` | Create a financial transaction |
+| GET | `/api/transactions` | Retrieve all transactions |
+| GET | `/api/transactions/active` | Retrieve active transactions |
+| GET | `/api/transactions/{transactionId}` | Retrieve a transaction by ID |
+| PATCH | `/api/transactions/{transactionId}/activate` | Activate a transaction |
+| PATCH | `/api/transactions/{transactionId}/deactivate` | Deactivate a transaction |
+
+The REST layer includes:
+
+- Request validation using Jakarta Bean Validation.
+- Separate request and response DTOs.
+- Centralized exception handling.
+- Consistent HTTP error responses using Spring ProblemDetail.
+
+## Testing
+
+Automated tests cover the domain, application, infrastructure, and presentation layers.
 
 - **Unit tests:** JUnit 5, Mockito, and AssertJ.
 - **Integration tests:** Testcontainers with PostgreSQL 17.
-- Repository tests validate persistence operations, entity mapping, and database interactions.
+- **Repository tests:** Validate persistence operations, entity mapping, and database interactions.
+- **Controller tests:** Validate HTTP endpoints, request handling, input validation, and error responses.
 
 ## Database
 
-The application uses **PostgreSQL 17**, running in Docker.
+The application uses PostgreSQL 17, running in Docker.
 
-Database schema creation and versioning are managed by **Flyway**.
+Database schema creation and versioning are managed by Flyway.
 
 Hibernate is configured with:
 
@@ -96,17 +135,17 @@ This configuration keeps schema management under Flyway and prevents Hibernate f
 
 ## Continuous Integration
 
-The project uses **GitHub Actions** to automate testing and build validation.
+The project uses GitHub Actions to automate testing and build validation.
 
 The workflow is configured to run on pushes and pull requests targeting the `main` and `develop` branches.
 
 Pipeline steps:
 
-- Checkout repository.
-- Set up Java 21 (Temurin).
-- Configure Gradle.
-- Run automated tests.
-- Build the application.
+1. Checkout repository.
+2. Set up Java 21 (Temurin).
+3. Configure Gradle.
+4. Run automated tests.
+5. Build the application.
 
 Workflow file: `.github/workflows/ci.yml`.
 
@@ -133,7 +172,7 @@ Configure the database credentials and connection settings.
 
 Example:
 
-```env
+```properties
 POSTGRES_DB=financial_assistant
 POSTGRES_USER=financial_user
 POSTGRES_PASSWORD=your_password
@@ -170,13 +209,13 @@ On Windows PowerShell:
 
 The application will be available at:
 
-`http://localhost:8080`
+http://localhost:8080
 
 ### 5. Check application health
 
 The project uses Spring Boot Actuator to expose a health endpoint:
 
-`http://localhost:8080/actuator/health`
+http://localhost:8080/actuator/health
 
 ### 6. Run automated tests
 
@@ -204,28 +243,29 @@ The project is currently under development.
 - [x] Domain layer implementation.
 - [x] Domain unit tests.
 - [x] Application use cases for financial transactions.
+- [x] Application use cases for category management.
 - [x] Application unit tests.
 - [x] Infrastructure persistence entities and mappers.
 - [x] Repository adapters using Spring Data JPA.
 - [x] Persistence integration tests with Testcontainers.
 - [x] GitHub Actions CI workflow configuration.
+- [x] REST API endpoints for categories and financial transactions.
+- [x] HTTP request and response DTOs.
+- [x] Request validation and centralized exception handling.
+- [x] REST controller tests.
 
 ### In Progress / Planned
 
-- [ ] Category management use cases.
-- [ ] REST API endpoints.
-- [ ] HTTP request and response DTOs.
-- [ ] Request validation and centralized exception handling.
 - [ ] Financial summaries and aggregation.
 - [ ] Spring AI and OpenAI integration.
 - [ ] AI-powered financial analysis and summaries.
 - [ ] Spring AI Tool Calling.
 - [ ] Audio input and interaction.
-- [ ] End-to-end and API tests.
+- [ ] End-to-end tests and additional API tests.
 - [ ] Final documentation and improvements.
 
 ## Author
 
-**Daniela Santos**
+Daniela Santos
 
 [GitHub](https://github.com/Danniesantos)
