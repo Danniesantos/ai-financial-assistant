@@ -5,12 +5,14 @@ import com.financialassistant.ai_financial_assistant.domain.repository.Financial
 import com.financialassistant.ai_financial_assistant.infrastructure.mapper.FinancialTransactionMapper;
 import com.financialassistant.ai_financial_assistant.infrastructure.persistence.entity.FinancialTransactionEntity;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 @Repository
+@Transactional
 public class FinancialTransactionRepositoryImpl implements FinancialTransactionRepository {
 
     private final SpringDataFinancialTransactionRepository springDataRepository;
@@ -34,12 +36,14 @@ public class FinancialTransactionRepositoryImpl implements FinancialTransactionR
         return mapper.toDomain(savedEntity);
     }
 
+    @Transactional(readOnly = true)
     @Override
     public Optional<FinancialTransaction> findById(UUID id) {
         return springDataRepository.findById(id)
                 .map(mapper::toDomain);
     }
 
+    @Transactional(readOnly = true)
     @Override
     public List<FinancialTransaction> findAll() {
         return springDataRepository.findAll()
@@ -48,6 +52,7 @@ public class FinancialTransactionRepositoryImpl implements FinancialTransactionR
                 .toList();
     }
 
+    @Transactional(readOnly = true)
     @Override
     public List<FinancialTransaction> findAllActive() {
         return springDataRepository.findAllByActiveTrue()
