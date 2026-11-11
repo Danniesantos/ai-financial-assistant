@@ -1,5 +1,6 @@
 package com.financialassistant.ai_financial_assistant.presentation.exception;
 
+import com.financialassistant.ai_financial_assistant.application.exception.AiProviderException;
 import com.financialassistant.ai_financial_assistant.application.exception.CategoryNotFoundException;
 import com.financialassistant.ai_financial_assistant.application.exception.FinancialTransactionNotFoundException;
 import com.financialassistant.ai_financial_assistant.domain.exception.DomainException;
@@ -98,6 +99,24 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
+                .body(problem);
+    }
+
+    @ExceptionHandler(AiProviderException.class)
+    public ResponseEntity<ProblemDetail> handleAiProviderException(
+            AiProviderException exception,
+            HttpServletRequest request
+    ) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+                HttpStatus.SERVICE_UNAVAILABLE,
+                "The AI service is temporarily unavailable."
+        );
+
+        problem.setTitle("Service Unavailable");
+        problem.setInstance(URI.create(request.getRequestURI()));
+
+        return ResponseEntity
+                .status(HttpStatus.SERVICE_UNAVAILABLE)
                 .body(problem);
     }
 }
