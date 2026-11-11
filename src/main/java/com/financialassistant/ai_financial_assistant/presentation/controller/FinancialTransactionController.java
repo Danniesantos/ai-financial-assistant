@@ -1,13 +1,17 @@
 package com.financialassistant.ai_financial_assistant.presentation.controller;
 
+import com.financialassistant.ai_financial_assistant.application.dto.FinancialSummary;
 import com.financialassistant.ai_financial_assistant.application.usecase.transaction.*;
 import com.financialassistant.ai_financial_assistant.presentation.dto.request.CreateFinancialTransactionRequest;
+import com.financialassistant.ai_financial_assistant.presentation.dto.response.FinancialSummaryResponse;
 import com.financialassistant.ai_financial_assistant.presentation.dto.response.FinancialTransactionResponse;
 import jakarta.validation.Valid;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -21,6 +25,7 @@ public class FinancialTransactionController {
     private final GetActiveFinancialTransactions getActiveFinancialTransactions;
     private final DeactivateFinancialTransaction deactivateFinancialTransaction;
     private final ActivateFinancialTransaction activateFinancialTransaction;
+    private final GetFinancialSummary getFinancialSummary;
 
     public FinancialTransactionController(
             CreateFinancialTransaction createFinancialTransaction,
@@ -28,7 +33,9 @@ public class FinancialTransactionController {
             GetFinancialTransactionById getFinancialTransactionById,
             GetActiveFinancialTransactions getActiveFinancialTransactions,
             DeactivateFinancialTransaction deactivateFinancialTransaction,
-            ActivateFinancialTransaction activateFinancialTransaction
+            ActivateFinancialTransaction activateFinancialTransaction,
+            GetFinancialSummary getFinancialSummary
+
     ) {
         this.createFinancialTransaction = createFinancialTransaction;
         this.getFinancialTransactions = getFinancialTransactions;
@@ -36,6 +43,7 @@ public class FinancialTransactionController {
         this.getActiveFinancialTransactions = getActiveFinancialTransactions;
         this.deactivateFinancialTransaction = deactivateFinancialTransaction;
         this.activateFinancialTransaction = activateFinancialTransaction;
+        this.getFinancialSummary = getFinancialSummary;
     }
 
     @PostMapping
@@ -72,6 +80,24 @@ public class FinancialTransactionController {
                 .toList();
 
         return ResponseEntity.ok(transactions);
+    }
+
+    @GetMapping("/summary")
+    public ResponseEntity<FinancialSummaryResponse> getSummary(
+            @RequestParam
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+            LocalDate startDate,
+
+            @RequestParam
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+            LocalDate endDate
+    ) {
+        FinancialSummary summary =
+                getFinancialSummary.execute(startDate, endDate);
+
+        return ResponseEntity.ok(
+                FinancialSummaryResponse.from(summary)
+        );
     }
 
     @GetMapping("/{transactionId}")

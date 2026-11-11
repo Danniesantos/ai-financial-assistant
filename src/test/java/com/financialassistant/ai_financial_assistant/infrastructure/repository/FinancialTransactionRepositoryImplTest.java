@@ -120,4 +120,68 @@ class FinancialTransactionRepositoryImplTest {
                 .doesNotContain(inactiveTransaction.getId());
     }
 
+    @Test
+    void shouldFindOnlyActiveTransactionsWithinDateRange() {
+
+        Category category = createCategory();
+
+        FinancialTransaction transactionBefore =
+                createTransaction(category, LocalDate.of(2026, 10, 31));
+
+        FinancialTransaction transactionAtStart =
+                createTransaction(category, LocalDate.of(2026, 11, 1));
+
+        FinancialTransaction transactionInside =
+                createTransaction(category, LocalDate.of(2026, 11, 15));
+
+        FinancialTransaction transactionAtEnd =
+                createTransaction(category, LocalDate.of(2026, 11, 30));
+
+        FinancialTransaction transactionAfter =
+                createTransaction(category, LocalDate.of(2026, 12, 1));
+
+        FinancialTransaction inactiveTransaction =
+                createTransaction(category, LocalDate.of(2026, 11, 20));
+
+        inactiveTransaction.deactivate();
+
+        transactionRepository.save(transactionBefore);
+        transactionRepository.save(transactionAtStart);
+        transactionRepository.save(transactionInside);
+        transactionRepository.save(transactionAtEnd);
+        transactionRepository.save(transactionAfter);
+        transactionRepository.save(inactiveTransaction);
+
+        List<FinancialTransaction> result =
+                transactionRepository.findAllActiveBetween(
+                        LocalDate.of(2026, 11, 1),
+                        LocalDate.of(2026, 11, 30)
+                );
+
+        assertThat(result)
+                .extracting(FinancialTransaction::getId)
+                .contains(
+                        transactionAtStart.getId(),
+                        transactionInside.getId(),
+                        transactionAtEnd.getId()
+                )
+                .doesNotContain(
+                        transactionBefore.getId(),
+                        transactionAfter.getId(),
+                        inactiveTransaction.getId()
+                );
+    }
+
+    private FinancialTransaction createTransaction(
+            Category category,
+            LocalDate date
+    ) {
+        return new FinancialTransaction(
+                "Supermarket",
+                new Money(new BigDecimal("150.00")),
+                category,
+                date
+        );
+    }
+
 }

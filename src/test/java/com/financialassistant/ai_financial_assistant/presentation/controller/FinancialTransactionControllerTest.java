@@ -1,5 +1,7 @@
 package com.financialassistant.ai_financial_assistant.presentation.controller;
 
+import com.financialassistant.ai_financial_assistant.application.dto.FinancialSummary;
+import com.financialassistant.ai_financial_assistant.application.exception.InvalidDateRangeException;
 import com.financialassistant.ai_financial_assistant.application.usecase.transaction.*;
 import com.financialassistant.ai_financial_assistant.domain.enums.TransactionType;
 import com.financialassistant.ai_financial_assistant.domain.model.Category;
@@ -47,6 +49,9 @@ class FinancialTransactionControllerTest {
 
     @MockitoBean
     private ActivateFinancialTransaction activateFinancialTransaction;
+
+    @MockitoBean
+    private GetFinancialSummary getFinancialSummary;
 
     private Category createCategory() {
         return new Category("Food", TransactionType.EXPENSE, false);
@@ -198,13 +203,13 @@ class FinancialTransactionControllerTest {
     @Test
     void shouldReturnBadRequestWhenAmountIsZero() throws Exception {
         String requestBody = """
-            {
-                "description": "Lunch",
-                "amount": 0,
-                "categoryId": "00000000-0000-0000-0000-000000000001",
-                "transactionDate": "2026-11-10"
-            }
-            """;
+                {
+                    "description": "Lunch",
+                    "amount": 0,
+                    "categoryId": "00000000-0000-0000-0000-000000000001",
+                    "transactionDate": "2026-11-10"
+                }
+                """;
 
         mockMvc.perform(post("/api/transactions")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -213,5 +218,47 @@ class FinancialTransactionControllerTest {
                 .andExpect(jsonPath("$.title").value("Bad Request"))
                 .andExpect(jsonPath("$.status").value(400))
                 .andExpect(jsonPath("$.errors.amount").value("Amount must be greater than zero"));
+    }
+
+    @Test
+    void shouldReturnFinancialSummary() throws Exception {
+        LocalDate startDate = LocalDate.of(2026, 11, 1);
+        LocalDate endDate = LocalDate.of(2026, 11, 30);
+
+        FinancialSummary summary = new FinancialSummary(
+                new BigDecimal("3500.00"),
+                new BigDecimal("1150.00"),
+                new BigDecimal("2350.00"),
+                4
+        );
+
+        when(getFinancialSummary.execute(startDate, endDate))
+                .thenReturn(summary);
+
+        mockMvc.perform(get("/api/transactions/summary")
+                        .param("startDate", "2026-11-01")
+                        .param("endDate", "2026-11-30"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalIncome").value(3500.00))
+                .andExpect(jsonPath("$.totalExpenses").value(1150.00))
+                .andExpect(jsonPath("$.balance").value(2350.00))
+                .andExpect(jsonPath("$.transactionCount").value(4));
+    }
+
+    @Test
+    void shouldReturnBadRequestWhenSummaryDateRangeIsInvalid() throws Exception {
+        LocalDate startDate = LocalDate.of(2026, 11, 30);
+        LocalDate endDate = LocalDate.of(2026, 11, 1);
+
+        when(getFinancialSummary.execute(startDate, endDate))
+                .thenThrow(new InvalidDateRangeException(
+                        "Start date must be before or equal to end date"
+                ));
+
+        mockMvc.perform(get("/api/transactions/summary")
+                        .param("startDate", "2026-11-30")
+                        .param("endDate", "2026-11-01"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400));
     }
 }
