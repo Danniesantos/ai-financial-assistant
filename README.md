@@ -6,34 +6,33 @@ The application is being developed with a focus on clean code, maintainability, 
 
 ## Technologies
 
-- **Java 21**
-- **Spring Boot 4.1.1**
-- **Gradle**
-- **PostgreSQL 17**
-- **Docker Compose**
-- **Spring Data JPA**
-- **Hibernate**
-- **Flyway**
-- **Spring Boot Actuator**
-- **JUnit 5**
-- **Mockito**
-- **Testcontainers**
-- **GitHub Actions**
-
-### Planned Technologies
-
-- Spring AI
+- Java 21
+- Spring Boot 4.1.1
+- Spring AI 2.0.2
 - OpenAI API
+- Gradle
+- PostgreSQL 17
+- Docker Compose
+- Spring Data JPA
+- Hibernate
+- Flyway
+- Spring Boot Actuator
+- JUnit 5
+- Mockito
+- AssertJ
+- Testcontainers
+- GitHub Actions
 
 ## Architecture
 
-The project follows **Clean Architecture**, separating business rules from frameworks, databases, and external services.
+The project follows Clean Architecture, separating business rules from frameworks, databases, and external services.
 
-The application is organized into three main layers:
+The application is organized into four main layers:
 
 - **Domain:** Contains business entities, value objects, enums, domain exceptions, and repository contracts.
 - **Application:** Contains use cases responsible for orchestrating business operations.
-- **Infrastructure:** Contains persistence entities, mappers, Spring Data repositories, and repository implementations.
+- **Infrastructure:** Contains persistence entities, mappers, Spring Data repositories, repository implementations, and external AI integrations.
+- **Presentation:** Contains REST controllers, HTTP request and response DTOs, validation, and centralized exception handling.
 
 This structure helps keep business rules independent of external technologies, making the application easier to maintain, test, and extend.
 
@@ -52,12 +51,36 @@ The initial domain model includes:
 
 Use cases currently implemented:
 
+**Financial Transactions**
+
 - Create financial transactions.
 - Retrieve all financial transactions.
 - Retrieve a financial transaction by ID.
 - Retrieve active financial transactions.
 - Activate financial transactions.
 - Deactivate financial transactions.
+- Retrieve active transactions within a date range.
+
+**Categories**
+
+- Create categories.
+- Retrieve all categories.
+- Retrieve active categories.
+
+**Financial Summaries**
+
+- Calculate total income.
+- Calculate total expenses.
+- Calculate the financial balance.
+- Count transactions within a specified date range.
+- Exclude inactive transactions from financial summaries.
+
+**AI Integration**
+
+- Application port for AI assistant communication.
+- Use case for generating AI responses.
+- Basic text-based integration with Spring AI and OpenAI.
+- Initial AI system instructions for personal finance assistance.
 
 ### Infrastructure Layer
 
@@ -67,20 +90,62 @@ Use cases currently implemented:
 - Repository implementations using Spring Data JPA.
 - PostgreSQL persistence.
 - Database schema versioning with Flyway.
+- OpenAI assistant adapter using Spring AI.
+- Initial financial summary tool for AI integration.
 
-### Testing
+### REST API
 
-Automated tests cover the domain, application, and persistence layers.
+The application exposes REST endpoints for managing categories and financial transactions.
+
+**Categories**
+
+| Method | Endpoint | Description |
+|---|---|---|
+| POST | `/api/categories` | Create a category |
+| GET | `/api/categories` | Retrieve all categories |
+| GET | `/api/categories/active` | Retrieve active categories |
+
+**Financial Transactions**
+
+| Method | Endpoint | Description |
+|---|---|---|
+| POST | `/api/transactions` | Create a financial transaction |
+| GET | `/api/transactions` | Retrieve all transactions |
+| GET | `/api/transactions/active` | Retrieve active transactions |
+| GET | `/api/transactions/summary?startDate=YYYY-MM-DD&endDate=YYYY-MM-DD` | Retrieve a financial summary for a date range |
+| GET | `/api/transactions/{transactionId}` | Retrieve a transaction by ID |
+| PATCH | `/api/transactions/{transactionId}/activate` | Activate a transaction |
+| PATCH | `/api/transactions/{transactionId}/deactivate` | Deactivate a transaction |
+
+**AI Assistant**
+
+| Method | Endpoint | Description |
+|---|---|---|
+| POST | `/api/assistant/chat` | Send a text prompt to the AI assistant |
+
+The REST layer includes:
+
+- Request validation using Jakarta Bean Validation.
+- Separate request and response DTOs.
+- Centralized exception handling.
+- Consistent HTTP error responses using Spring ProblemDetail.
+
+## Testing
+
+Automated tests cover the domain, application, infrastructure, and presentation layers.
 
 - **Unit tests:** JUnit 5, Mockito, and AssertJ.
 - **Integration tests:** Testcontainers with PostgreSQL 17.
-- Repository tests validate persistence operations, entity mapping, and database interactions.
+- **Repository tests:** Validate persistence operations, entity mapping, and database interactions.
+- **Controller tests:** Validate HTTP endpoints, request handling, input validation, and error responses.
+- **AI adapter tests:** Validate AI provider communication behavior and error handling without requiring real API calls.
+- **AI tool tests:** Validate date conversion, use case delegation, and financial summary results.
 
 ## Database
 
-The application uses **PostgreSQL 17**, running in Docker.
+The application uses PostgreSQL 17, running in Docker.
 
-Database schema creation and versioning are managed by **Flyway**.
+Database schema creation and versioning are managed by Flyway.
 
 Hibernate is configured with:
 
@@ -96,17 +161,17 @@ This configuration keeps schema management under Flyway and prevents Hibernate f
 
 ## Continuous Integration
 
-The project uses **GitHub Actions** to automate testing and build validation.
+The project uses GitHub Actions to automate testing and build validation.
 
-The workflow is configured to run on pushes and pull requests targeting the `main` and `develop` branches.
+The workflow is configured to run on pushes and pull requests targeting the main and develop branches.
 
 Pipeline steps:
 
-- Checkout repository.
-- Set up Java 21 (Temurin).
-- Configure Gradle.
-- Run automated tests.
-- Build the application.
+1. Checkout repository.
+2. Set up Java 21 (Temurin).
+3. Configure Gradle.
+4. Run automated tests.
+5. Build the application.
 
 Workflow file: `.github/workflows/ci.yml`.
 
@@ -133,14 +198,15 @@ Configure the database credentials and connection settings.
 
 Example:
 
-```env
+```properties
 POSTGRES_DB=financial_assistant
 POSTGRES_USER=financial_user
 POSTGRES_PASSWORD=your_password
 POSTGRES_PORT=5433
+OPENAI_API_KEY=your-openai-api-key
 ```
 
-**Important:** The `.env` file contains local configuration and must not be committed to Git.
+Important: The `.env` file contains local configuration and must not be committed to Git.
 
 Spring Boot does not automatically load `.env` files. On Windows PowerShell, load the variables into the current terminal session:
 
@@ -204,28 +270,34 @@ The project is currently under development.
 - [x] Domain layer implementation.
 - [x] Domain unit tests.
 - [x] Application use cases for financial transactions.
+- [x] Application use cases for category management.
+- [x] Financial summary calculation and use case.
 - [x] Application unit tests.
 - [x] Infrastructure persistence entities and mappers.
 - [x] Repository adapters using Spring Data JPA.
 - [x] Persistence integration tests with Testcontainers.
 - [x] GitHub Actions CI workflow configuration.
+- [x] REST API endpoints for categories and financial transactions.
+- [x] Financial summary REST endpoint.
+- [x] AI assistant text endpoint.
+- [x] HTTP request and response DTOs.
+- [x] Request validation and centralized exception handling.
+- [x] REST controller tests.
+- [x] Basic Spring AI and OpenAI adapter implementation.
+- [x] AI adapter unit tests.
+- [x] Initial financial summary tool implementation and unit tests.
 
 ### In Progress / Planned
 
-- [ ] Category management use cases.
-- [ ] REST API endpoints.
-- [ ] HTTP request and response DTOs.
-- [ ] Request validation and centralized exception handling.
-- [ ] Financial summaries and aggregation.
-- [ ] Spring AI and OpenAI integration.
-- [ ] AI-powered financial analysis and summaries.
-- [ ] Spring AI Tool Calling.
-- [ ] Audio input and interaction.
-- [ ] End-to-end and API tests.
-- [ ] Final documentation and improvements.
+- [ ] Connect the financial summary tool to the AI assistant.
+- [ ] Complete Spring AI Tool Calling integration.
+- [ ] Enable AI-powered financial analysis and summaries using persisted transaction data.
+- [ ] Implement audio input and interaction.
+- [ ] Add end-to-end tests and additional API tests.
+- [ ] Complete final documentation and improvements.
 
 ## Author
 
-**Daniela Santos**
+Daniela Santos
 
 [GitHub](https://github.com/Danniesantos)
