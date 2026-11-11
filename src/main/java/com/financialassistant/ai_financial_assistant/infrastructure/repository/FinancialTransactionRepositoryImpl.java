@@ -7,6 +7,7 @@ import com.financialassistant.ai_financial_assistant.infrastructure.persistence.
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -56,6 +57,22 @@ public class FinancialTransactionRepositoryImpl implements FinancialTransactionR
     @Override
     public List<FinancialTransaction> findAllActive() {
         return springDataRepository.findAllByActiveTrue()
+                .stream()
+                .map(mapper::toDomain)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public List<FinancialTransaction> findAllActiveBetween(
+            LocalDate startDate,
+            LocalDate endDate
+    ) {
+        return springDataRepository
+                .findAllByActiveTrueAndTransactionDateBetween(
+                        startDate,
+                        endDate
+                )
                 .stream()
                 .map(mapper::toDomain)
                 .toList();
