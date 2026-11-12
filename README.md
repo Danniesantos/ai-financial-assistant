@@ -81,6 +81,7 @@ Use cases currently implemented:
 - Use case for generating AI responses.
 - Basic text-based integration with Spring AI and OpenAI.
 - Initial AI system instructions for personal finance assistance.
+- Financial summary tool registered with the Spring AI ChatClient.
 
 ### Infrastructure Layer
 
@@ -91,7 +92,7 @@ Use cases currently implemented:
 - PostgreSQL persistence.
 - Database schema versioning with Flyway.
 - OpenAI assistant adapter using Spring AI.
-- Initial financial summary tool for AI integration.
+- Financial summary tool integrated with the assistant's ChatClient configuration.
 
 ### REST API
 
@@ -138,8 +139,9 @@ Automated tests cover the domain, application, infrastructure, and presentation 
 - **Integration tests:** Testcontainers with PostgreSQL 17.
 - **Repository tests:** Validate persistence operations, entity mapping, and database interactions.
 - **Controller tests:** Validate HTTP endpoints, request handling, input validation, and error responses.
-- **AI adapter tests:** Validate AI provider communication behavior and error handling without requiring real API calls.
+- **AI adapter tests:** Validate adapter behavior and error handling without requiring real API calls.
 - **AI tool tests:** Validate date conversion, use case delegation, and financial summary results.
+- **AI tool integration tests:** Validate the complete path from the financial summary tool to the application use case, repository adapter, and PostgreSQL database.
 
 ## Database
 
@@ -163,7 +165,11 @@ This configuration keeps schema management under Flyway and prevents Hibernate f
 
 The project uses GitHub Actions to automate testing and build validation.
 
-The workflow is configured to run on pushes and pull requests targeting the main and develop branches.
+The workflow runs on:
+
+- Pushes to `main`, `develop`, and `feature/**` branches.
+- Pull requests targeting `main` and `develop`.
+- Manual workflow dispatch.
 
 Pipeline steps:
 
@@ -194,7 +200,7 @@ cd ai-financial-assistant
 
 Create a local `.env` file using `.env.example` as a reference.
 
-Configure the database credentials and connection settings.
+Configure the database credentials and connection settings, as well as your OpenAI API key.
 
 Example:
 
@@ -285,16 +291,20 @@ The project is currently under development.
 - [x] REST controller tests.
 - [x] Basic Spring AI and OpenAI adapter implementation.
 - [x] AI adapter unit tests.
-- [x] Initial financial summary tool implementation and unit tests.
+- [x] Financial summary tool implementation and unit tests.
+- [x] Financial summary tool registration with ChatClient.
+- [x] Financial summary tool integration test with PostgreSQL.
+- [x] Full automated test suite passing.
 
 ### In Progress / Planned
 
-- [ ] Connect the financial summary tool to the AI assistant.
-- [ ] Complete Spring AI Tool Calling integration.
-- [ ] Enable AI-powered financial analysis and summaries using persisted transaction data.
+- [ ] Validate live Spring AI Tool Calling execution with the OpenAI model.
+- [ ] Implement AI-powered financial analysis and summaries using persisted transaction data.
 - [ ] Implement audio input and interaction.
 - [ ] Add end-to-end tests and additional API tests.
 - [ ] Complete final documentation and improvements.
+
+**Note:** The financial summary tool is implemented, registered with the ChatClient, and tested against a real PostgreSQL instance through Testcontainers. Live model-driven tool invocation has not yet been validated.
 
 ## Author
 
