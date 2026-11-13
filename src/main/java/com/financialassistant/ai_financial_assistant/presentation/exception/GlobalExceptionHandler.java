@@ -3,6 +3,7 @@ package com.financialassistant.ai_financial_assistant.presentation.exception;
 import com.financialassistant.ai_financial_assistant.application.exception.AiProviderException;
 import com.financialassistant.ai_financial_assistant.application.exception.CategoryNotFoundException;
 import com.financialassistant.ai_financial_assistant.application.exception.FinancialTransactionNotFoundException;
+import com.financialassistant.ai_financial_assistant.application.exception.PendingTransactionPreviewNotFoundException;
 import com.financialassistant.ai_financial_assistant.domain.exception.DomainException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
@@ -118,5 +119,19 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.SERVICE_UNAVAILABLE)
                 .body(problem);
+    }
+
+    @ExceptionHandler(PendingTransactionPreviewNotFoundException.class)
+    public ProblemDetail handlePendingTransactionPreviewNotFound(
+            PendingTransactionPreviewNotFoundException exception
+    ) {
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
+                HttpStatus.NOT_FOUND,
+                exception.getMessage()
+        );
+
+        problemDetail.setTitle("Transaction Preview Not Found");
+
+        return problemDetail;
     }
 }

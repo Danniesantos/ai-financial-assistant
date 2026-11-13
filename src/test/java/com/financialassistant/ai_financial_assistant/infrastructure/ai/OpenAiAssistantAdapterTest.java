@@ -2,6 +2,8 @@ package com.financialassistant.ai_financial_assistant.infrastructure.ai;
 
 import com.financialassistant.ai_financial_assistant.application.exception.AiProviderException;
 import com.financialassistant.ai_financial_assistant.infrastructure.ai.tools.FinancialSummaryTool;
+import com.financialassistant.ai_financial_assistant.infrastructure.ai.tools.QueryCategoriesTool;
+import com.financialassistant.ai_financial_assistant.infrastructure.ai.tools.QueryTransactionsTool;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -29,7 +31,13 @@ class OpenAiAssistantAdapterTest {
     private ChatClient.CallResponseSpec responseSpec;
 
     @Mock
+    private QueryTransactionsTool queryTransactionsTool;
+
+    @Mock
     private FinancialSummaryTool financialSummaryTool;
+
+    @Mock
+    private QueryCategoriesTool queryCategoriesTool;
 
     private OpenAiAssistantAdapter adapter;
 
@@ -39,7 +47,9 @@ class OpenAiAssistantAdapterTest {
 
         adapter = new OpenAiAssistantAdapter(
                 chatClientBuilder,
-                financialSummaryTool
+                financialSummaryTool,
+                queryTransactionsTool,
+                queryCategoriesTool
         );
     }
 
@@ -51,7 +61,11 @@ class OpenAiAssistantAdapterTest {
         when(chatClient.prompt()).thenReturn(requestSpec);
         when(requestSpec.system(anyString())).thenReturn(requestSpec);
         when(requestSpec.user(prompt)).thenReturn(requestSpec);
-        when(requestSpec.tools(financialSummaryTool)).thenReturn(requestSpec);
+        when(requestSpec.tools(
+                financialSummaryTool,
+                queryTransactionsTool,
+                queryCategoriesTool
+        )).thenReturn(requestSpec);
         when(requestSpec.call()).thenReturn(responseSpec);
         when(responseSpec.content()).thenReturn(expectedResponse);
 
@@ -63,7 +77,11 @@ class OpenAiAssistantAdapterTest {
         verify(chatClient).prompt();
         verify(requestSpec).system(anyString());
         verify(requestSpec).user(prompt);
-        verify(requestSpec).tools(financialSummaryTool);
+        verify(requestSpec).tools(
+                financialSummaryTool,
+                queryTransactionsTool,
+                queryCategoriesTool
+        );
         verify(requestSpec).call();
         verify(responseSpec).content();
     }
@@ -75,7 +93,11 @@ class OpenAiAssistantAdapterTest {
         when(chatClient.prompt()).thenReturn(requestSpec);
         when(requestSpec.system(anyString())).thenReturn(requestSpec);
         when(requestSpec.user(prompt)).thenReturn(requestSpec);
-        when(requestSpec.tools(financialSummaryTool)).thenReturn(requestSpec);
+        when(requestSpec.tools(
+                financialSummaryTool,
+                queryTransactionsTool,
+                queryCategoriesTool
+        )).thenReturn(requestSpec);
         when(requestSpec.call()).thenThrow(
                 new RuntimeException("Provider unavailable")
         );
@@ -84,7 +106,11 @@ class OpenAiAssistantAdapterTest {
                 .isInstanceOf(AiProviderException.class)
                 .hasMessage("The AI provider is currently unavailable.");
 
-        verify(requestSpec).tools(financialSummaryTool);
+        verify(requestSpec).tools(
+                financialSummaryTool,
+                queryTransactionsTool,
+                queryCategoriesTool
+        );
         verify(requestSpec).call();
         verify(responseSpec, never()).content();
     }

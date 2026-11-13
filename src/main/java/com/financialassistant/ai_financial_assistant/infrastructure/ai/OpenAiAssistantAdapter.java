@@ -3,6 +3,8 @@ package com.financialassistant.ai_financial_assistant.infrastructure.ai;
 import com.financialassistant.ai_financial_assistant.application.exception.AiProviderException;
 import com.financialassistant.ai_financial_assistant.application.port.AiAssistant;
 import com.financialassistant.ai_financial_assistant.infrastructure.ai.tools.FinancialSummaryTool;
+import com.financialassistant.ai_financial_assistant.infrastructure.ai.tools.QueryCategoriesTool;
+import com.financialassistant.ai_financial_assistant.infrastructure.ai.tools.QueryTransactionsTool;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.stereotype.Component;
 
@@ -11,6 +13,20 @@ public class OpenAiAssistantAdapter implements AiAssistant {
 
     private final ChatClient chatClient;
     private final FinancialSummaryTool financialSummaryTool;
+    private final QueryTransactionsTool queryTransactionsTool;
+    private final QueryCategoriesTool queryCategoriesTool;
+
+    public OpenAiAssistantAdapter(
+            ChatClient.Builder chatClientBuilder,
+            FinancialSummaryTool financialSummaryTool,
+            QueryTransactionsTool queryTransactionsTool,
+            QueryCategoriesTool queryCategoriesTool
+    ) {
+        this.chatClient = chatClientBuilder.build();
+        this.financialSummaryTool = financialSummaryTool;
+        this.queryTransactionsTool = queryTransactionsTool;
+        this.queryCategoriesTool = queryCategoriesTool;
+    }
 
     private static final String SYSTEM_INSTRUCTIONS = """
             You are a financial assistant specialized in personal finance.
@@ -32,21 +48,13 @@ public class OpenAiAssistantAdapter implements AiAssistant {
             - Do not present financial suggestions as guaranteed results.
             """;
 
-    public OpenAiAssistantAdapter(
-            ChatClient.Builder chatClientBuilder,
-            FinancialSummaryTool financialSummaryTool
-    ) {
-        this.chatClient = chatClientBuilder.build();
-        this.financialSummaryTool = financialSummaryTool;
-    }
-
     @Override
     public String generateResponse(String prompt) {
         try {
             return chatClient.prompt()
                     .system(SYSTEM_INSTRUCTIONS)
                     .user(prompt)
-                    .tools(financialSummaryTool)
+                    .tools(financialSummaryTool, queryTransactionsTool, queryCategoriesTool)
                     .call()
                     .content();
         } catch (RuntimeException exception) {
