@@ -1,10 +1,8 @@
 package com.financialassistant.ai_financial_assistant.infrastructure.ai.tools;
 
-import com.financialassistant.ai_financial_assistant.application.usecase.transaction.CreateFinancialTransaction;
-import com.financialassistant.ai_financial_assistant.domain.enums.TransactionType;
-import com.financialassistant.ai_financial_assistant.domain.model.Category;
-import com.financialassistant.ai_financial_assistant.domain.model.FinancialTransaction;
-import com.financialassistant.ai_financial_assistant.domain.valueobject.Money;
+import com.financialassistant.ai_financial_assistant.application.dto.PendingTransactionPreview;
+import com.financialassistant.ai_financial_assistant.application.dto.TransactionPreview;
+import com.financialassistant.ai_financial_assistant.application.usecase.transaction.CreateTransactionPreview;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -12,6 +10,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.UUID;
 
@@ -23,42 +22,49 @@ import static org.mockito.Mockito.*;
 class CreateTransactionToolTest {
 
     @Mock
-    private CreateFinancialTransaction createFinancialTransaction;
+    private CreateTransactionPreview createTransactionPreview;
 
     private CreateTransactionTool createTransactionTool;
 
     @BeforeEach
     void setUp() {
         createTransactionTool = new CreateTransactionTool(
-                createFinancialTransaction
+                createTransactionPreview
         );
     }
 
     @Test
-    void shouldCreateTransactionSuccessfully() {
+    void shouldCreateTransactionPreviewSuccessfully() {
         UUID categoryId = UUID.randomUUID();
+        UUID previewId = UUID.randomUUID();
 
-        Category category = new Category(
-                "Salary",
-                TransactionType.INCOME,
-                false
-        );
+        LocalDate transactionDate = LocalDate.of(2026, 11, 5);
+        Instant expiresAt = Instant.parse("2026-11-05T12:10:00Z");
 
-        FinancialTransaction transaction = new FinancialTransaction(
-                "Monthly salary",
-                new Money(new BigDecimal("3500.00")),
-                category,
-                LocalDate.of(2026, 11, 5)
-        );
-
-        when(createFinancialTransaction.execute(
+        TransactionPreview transaction = new TransactionPreview(
                 "Monthly salary",
                 new BigDecimal("3500.00"),
                 categoryId,
-                LocalDate.of(2026, 11, 5)
-        )).thenReturn(transaction);
+                "Salary",
+                "INCOME",
+                transactionDate
+        );
 
-        CreateTransactionTool.TransactionCreationResult result =
+        PendingTransactionPreview pendingPreview =
+                new PendingTransactionPreview(
+                        previewId,
+                        transaction,
+                        expiresAt
+                );
+
+        when(createTransactionPreview.execute(
+                "Monthly salary",
+                new BigDecimal("3500.00"),
+                categoryId,
+                transactionDate
+        )).thenReturn(pendingPreview);
+
+        CreateTransactionTool.TransactionPreviewResult result =
                 createTransactionTool.createTransaction(
                         "Monthly salary",
                         new BigDecimal("3500.00"),
@@ -66,20 +72,19 @@ class CreateTransactionToolTest {
                         "2026-11-05"
                 );
 
-        assertThat(result.id()).isEqualTo(transaction.getId().toString());
+        assertThat(result.previewId()).isEqualTo(previewId.toString());
         assertThat(result.description()).isEqualTo("Monthly salary");
         assertThat(result.amount()).isEqualByComparingTo("3500.00");
         assertThat(result.category()).isEqualTo("Salary");
         assertThat(result.type()).isEqualTo("INCOME");
-        assertThat(result.transactionDate())
-                .isEqualTo(LocalDate.of(2026, 11, 5));
-        assertThat(result.active()).isTrue();
+        assertThat(result.transactionDate()).isEqualTo(transactionDate);
+        assertThat(result.expiresAt()).isEqualTo(expiresAt);
 
-        verify(createFinancialTransaction).execute(
+        verify(createTransactionPreview).execute(
                 "Monthly salary",
                 new BigDecimal("3500.00"),
                 categoryId,
-                LocalDate.of(2026, 11, 5)
+                transactionDate
         );
     }
 
@@ -94,7 +99,7 @@ class CreateTransactionToolTest {
                 )
         ).isInstanceOf(IllegalArgumentException.class);
 
-        verifyNoInteractions(createFinancialTransaction);
+        verifyNoInteractions(createTransactionPreview);
     }
 
     @Test
@@ -110,6 +115,6 @@ class CreateTransactionToolTest {
                 )
         ).isInstanceOf(java.time.format.DateTimeParseException.class);
 
-        verifyNoInteractions(createFinancialTransaction);
+        verifyNoInteractions(createTransactionPreview);
     }
 }

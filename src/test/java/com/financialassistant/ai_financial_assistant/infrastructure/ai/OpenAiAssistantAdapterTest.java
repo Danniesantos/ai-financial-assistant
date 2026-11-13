@@ -1,6 +1,7 @@
 package com.financialassistant.ai_financial_assistant.infrastructure.ai;
 
 import com.financialassistant.ai_financial_assistant.application.exception.AiProviderException;
+import com.financialassistant.ai_financial_assistant.infrastructure.ai.tools.CreateTransactionTool;
 import com.financialassistant.ai_financial_assistant.infrastructure.ai.tools.FinancialSummaryTool;
 import com.financialassistant.ai_financial_assistant.infrastructure.ai.tools.QueryCategoriesTool;
 import com.financialassistant.ai_financial_assistant.infrastructure.ai.tools.QueryTransactionsTool;
@@ -39,6 +40,9 @@ class OpenAiAssistantAdapterTest {
     @Mock
     private QueryCategoriesTool queryCategoriesTool;
 
+    @Mock
+    private CreateTransactionTool createTransactionTool;
+
     private OpenAiAssistantAdapter adapter;
 
     @BeforeEach
@@ -49,7 +53,8 @@ class OpenAiAssistantAdapterTest {
                 chatClientBuilder,
                 financialSummaryTool,
                 queryTransactionsTool,
-                queryCategoriesTool
+                queryCategoriesTool,
+                createTransactionTool
         );
     }
 
@@ -64,7 +69,8 @@ class OpenAiAssistantAdapterTest {
         when(requestSpec.tools(
                 financialSummaryTool,
                 queryTransactionsTool,
-                queryCategoriesTool
+                queryCategoriesTool,
+                createTransactionTool
         )).thenReturn(requestSpec);
         when(requestSpec.call()).thenReturn(responseSpec);
         when(responseSpec.content()).thenReturn(expectedResponse);
@@ -80,7 +86,8 @@ class OpenAiAssistantAdapterTest {
         verify(requestSpec).tools(
                 financialSummaryTool,
                 queryTransactionsTool,
-                queryCategoriesTool
+                queryCategoriesTool,
+                createTransactionTool
         );
         verify(requestSpec).call();
         verify(responseSpec).content();
@@ -96,7 +103,8 @@ class OpenAiAssistantAdapterTest {
         when(requestSpec.tools(
                 financialSummaryTool,
                 queryTransactionsTool,
-                queryCategoriesTool
+                queryCategoriesTool,
+                createTransactionTool
         )).thenReturn(requestSpec);
         when(requestSpec.call()).thenThrow(
                 new RuntimeException("Provider unavailable")
@@ -109,7 +117,8 @@ class OpenAiAssistantAdapterTest {
         verify(requestSpec).tools(
                 financialSummaryTool,
                 queryTransactionsTool,
-                queryCategoriesTool
+                queryCategoriesTool,
+                createTransactionTool
         );
         verify(requestSpec).call();
         verify(responseSpec, never()).content();

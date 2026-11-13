@@ -2,6 +2,7 @@ package com.financialassistant.ai_financial_assistant.presentation.controller;
 
 import com.financialassistant.ai_financial_assistant.application.dto.FinancialSummary;
 import com.financialassistant.ai_financial_assistant.application.usecase.transaction.*;
+import com.financialassistant.ai_financial_assistant.domain.model.FinancialTransaction;
 import com.financialassistant.ai_financial_assistant.presentation.dto.request.CreateFinancialTransactionRequest;
 import com.financialassistant.ai_financial_assistant.presentation.dto.response.FinancialSummaryResponse;
 import com.financialassistant.ai_financial_assistant.presentation.dto.response.FinancialTransactionResponse;
@@ -26,6 +27,7 @@ public class FinancialTransactionController {
     private final DeactivateFinancialTransaction deactivateFinancialTransaction;
     private final ActivateFinancialTransaction activateFinancialTransaction;
     private final GetFinancialSummary getFinancialSummary;
+    private final ConfirmTransaction confirmTransaction;
 
     public FinancialTransactionController(
             CreateFinancialTransaction createFinancialTransaction,
@@ -34,7 +36,8 @@ public class FinancialTransactionController {
             GetActiveFinancialTransactions getActiveFinancialTransactions,
             DeactivateFinancialTransaction deactivateFinancialTransaction,
             ActivateFinancialTransaction activateFinancialTransaction,
-            GetFinancialSummary getFinancialSummary
+            GetFinancialSummary getFinancialSummary,
+            ConfirmTransaction confirmTransaction
 
     ) {
         this.createFinancialTransaction = createFinancialTransaction;
@@ -44,6 +47,7 @@ public class FinancialTransactionController {
         this.deactivateFinancialTransaction = deactivateFinancialTransaction;
         this.activateFinancialTransaction = activateFinancialTransaction;
         this.getFinancialSummary = getFinancialSummary;
+        this.confirmTransaction = confirmTransaction;
     }
 
     @PostMapping
@@ -59,6 +63,16 @@ public class FinancialTransactionController {
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)
+                .body(FinancialTransactionResponse.from(transaction));
+    }
+
+    @PostMapping("/confirm/{previewId}")
+    public ResponseEntity<FinancialTransactionResponse> confirm(
+            @PathVariable UUID previewId
+    ) {
+        FinancialTransaction transaction = confirmTransaction.execute(previewId);
+
+        return ResponseEntity.status(HttpStatus.CREATED)
                 .body(FinancialTransactionResponse.from(transaction));
     }
 
