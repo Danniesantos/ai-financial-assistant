@@ -1,8 +1,8 @@
 # AI Financial Assistant API
 
-An AI-powered financial assistant built with Java and Spring Boot. The project aims to help users manage financial transactions, understand their spending habits, and receive personalized financial insights through text and audio interactions.
+An AI-powered financial assistant built with Java and Spring Boot. The project aims to help users manage financial transactions, understand their spending habits, and access financial assistance through text-based interactions and audio transcription.
 
-The application is being developed with a focus on clean code, maintainability, automated testing, and separation of concerns.
+The application is designed with a focus on clean code, maintainability, automated testing, and separation of concerns.
 
 ## Technologies
 
@@ -78,9 +78,16 @@ Use cases currently implemented:
 **AI Integration**
 
 - Application port for AI assistant communication.
+- Application port for audio transcription.
 - Use case for generating AI responses.
+- Use case for audio transcription.
 - Basic text-based integration with Spring AI and OpenAI.
+- Audio transcription integration using OpenAI Whisper.
 - Initial AI system instructions for personal finance assistance.
+- Financial tools for querying transactions, categories,
+  retrieving financial summaries, and preparing transaction previews.
+- Transaction preview workflow requiring explicit confirmation
+  before persistence.
 
 ### Infrastructure Layer
 
@@ -91,7 +98,12 @@ Use cases currently implemented:
 - PostgreSQL persistence.
 - Database schema versioning with Flyway.
 - OpenAI assistant adapter using Spring AI.
-- Initial financial summary tool for AI integration.
+- OpenAI audio transcription adapter using Spring AI.
+- Financial summary tool.
+- Transaction query tool.
+- Category query tool.
+- Transaction preview tool with explicit confirmation workflow.
+- AI tools registered with the assistant's ChatClient.
 
 ### REST API
 
@@ -110,6 +122,7 @@ The application exposes REST endpoints for managing categories and financial tra
 | Method | Endpoint | Description |
 |---|---|---|
 | POST | `/api/transactions` | Create a financial transaction |
+| POST | `/api/transactions/confirm/{previewId}` | Confirm and persist a transaction preview |
 | GET | `/api/transactions` | Retrieve all transactions |
 | GET | `/api/transactions/active` | Retrieve active transactions |
 | GET | `/api/transactions/summary?startDate=YYYY-MM-DD&endDate=YYYY-MM-DD` | Retrieve a financial summary for a date range |
@@ -122,6 +135,7 @@ The application exposes REST endpoints for managing categories and financial tra
 | Method | Endpoint | Description |
 |---|---|---|
 | POST | `/api/assistant/chat` | Send a text prompt to the AI assistant |
+| POST | `/api/assistant/transcribe` | Transcribe an uploaded audio file |
 
 The REST layer includes:
 
@@ -135,11 +149,15 @@ The REST layer includes:
 Automated tests cover the domain, application, infrastructure, and presentation layers.
 
 - **Unit tests:** JUnit 5, Mockito, and AssertJ.
+- **Domain tests:** Validate business rules and value objects.
+- **Application tests:** Validate use cases and business workflows.
 - **Integration tests:** Testcontainers with PostgreSQL 17.
 - **Repository tests:** Validate persistence operations, entity mapping, and database interactions.
 - **Controller tests:** Validate HTTP endpoints, request handling, input validation, and error responses.
-- **AI adapter tests:** Validate AI provider communication behavior and error handling without requiring real API calls.
-- **AI tool tests:** Validate date conversion, use case delegation, and financial summary results.
+- **AI adapter tests:** Validate text generation and audio transcription adapters, including error handling, without requiring real API calls.
+- **AI tool tests:** Validate tool behavior, parameter conversion, and use case delegation.
+- **AI tool integration tests:** Validate the financial summary tool execution path through the application, repository adapter, and PostgreSQL database.
+- **Audio transcription tests:** Validate audio transcription configuration, adapter behavior, and HTTP request handling.
 
 ## Database
 
@@ -163,7 +181,11 @@ This configuration keeps schema management under Flyway and prevents Hibernate f
 
 The project uses GitHub Actions to automate testing and build validation.
 
-The workflow is configured to run on pushes and pull requests targeting the main and develop branches.
+The workflow runs on:
+
+- Pushes to `main`, `develop`, and `feature/**` branches.
+- Pull requests targeting `main` and `develop`.
+- Manual workflow dispatch.
 
 Pipeline steps:
 
@@ -194,7 +216,7 @@ cd ai-financial-assistant
 
 Create a local `.env` file using `.env.example` as a reference.
 
-Configure the database credentials and connection settings.
+Configure the database credentials and connection settings, as well as your OpenAI API key.
 
 Example:
 
@@ -260,41 +282,38 @@ Integration tests use Testcontainers and require Docker to be available.
 
 ## Project Status
 
-The project is currently under development.
+The main application features have been implemented. The project is currently in the final review and documentation phase.
 
 ### Completed
 
 - [x] Initial project configuration.
 - [x] PostgreSQL configuration with Docker Compose.
-- [x] Flyway configuration and initial database migration.
-- [x] Domain layer implementation.
-- [x] Domain unit tests.
-- [x] Application use cases for financial transactions.
-- [x] Application use cases for category management.
-- [x] Financial summary calculation and use case.
-- [x] Application unit tests.
-- [x] Infrastructure persistence entities and mappers.
-- [x] Repository adapters using Spring Data JPA.
+- [x] Flyway configuration and database migrations.
+- [x] Domain layer implementation and unit tests.
+- [x] Application use cases and unit tests.
+- [x] Category and financial transaction management.
+- [x] Financial summary calculation and REST endpoint.
+- [x] Infrastructure persistence entities, mappers, and repository adapters.
 - [x] Persistence integration tests with Testcontainers.
-- [x] GitHub Actions CI workflow configuration.
-- [x] REST API endpoints for categories and financial transactions.
-- [x] Financial summary REST endpoint.
+- [x] GitHub Actions CI workflow.
+- [x] REST API endpoints and centralized exception handling.
 - [x] AI assistant text endpoint.
-- [x] HTTP request and response DTOs.
-- [x] Request validation and centralized exception handling.
-- [x] REST controller tests.
-- [x] Basic Spring AI and OpenAI adapter implementation.
-- [x] AI adapter unit tests.
-- [x] Initial financial summary tool implementation and unit tests.
+- [x] Spring AI and OpenAI adapter implementation.
+- [x] Financial summary, transaction query, and category query tools.
+- [x] Transaction preview tool with explicit confirmation workflow.
+- [x] AI tools registered with ChatClient.
+- [x] Audio transcription integration using OpenAI Whisper.
+- [x] Audio transcription REST endpoint and tests.
+- [x] Full automated test suite passing.
+- [x] Manual validation of core REST API operations.
 
-### In Progress / Planned
+### Pending
 
-- [ ] Connect the financial summary tool to the AI assistant.
-- [ ] Complete Spring AI Tool Calling integration.
-- [ ] Enable AI-powered financial analysis and summaries using persisted transaction data.
-- [ ] Implement audio input and interaction.
-- [ ] Add end-to-end tests and additional API tests.
-- [ ] Complete final documentation and improvements.
+- [ ] Validate live Spring AI Tool Calling execution with the OpenAI model.
+- [ ] Perform final project review and documentation.
+- [ ] Prepare the project for final delivery.
+
+**Note:** AI tools are implemented, registered with ChatClient, and covered by automated tests. Live model-driven Tool Calling has not yet been validated because a funded OpenAI API key is required. Audio transcription is implemented and tested with mocked provider responses; live transcription has not yet been validated.
 
 ## Author
 

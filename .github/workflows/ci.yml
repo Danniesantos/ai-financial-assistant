@@ -22,6 +22,28 @@ jobs:
     name: Build and Test
     runs-on: ubuntu-latest
 
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: financial_assistant
+          POSTGRES_USER: financial_user
+          POSTGRES_PASSWORD: financial_password
+        ports:
+          - 5433:5432
+        options: >-
+          --health-cmd "pg_isready -U financial_user -d financial_assistant"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      POSTGRES_PORT: 5433
+      POSTGRES_DB: financial_assistant
+      POSTGRES_USER: financial_user
+      POSTGRES_PASSWORD: financial_password
+      OPENAI_API_KEY: test-api-key
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4

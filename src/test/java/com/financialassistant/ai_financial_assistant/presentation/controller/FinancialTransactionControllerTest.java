@@ -2,6 +2,7 @@ package com.financialassistant.ai_financial_assistant.presentation.controller;
 
 import com.financialassistant.ai_financial_assistant.application.dto.FinancialSummary;
 import com.financialassistant.ai_financial_assistant.application.exception.InvalidDateRangeException;
+import com.financialassistant.ai_financial_assistant.application.exception.PendingTransactionPreviewNotFoundException;
 import com.financialassistant.ai_financial_assistant.application.usecase.transaction.*;
 import com.financialassistant.ai_financial_assistant.domain.enums.TransactionType;
 import com.financialassistant.ai_financial_assistant.domain.model.Category;
@@ -20,8 +21,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -52,6 +52,9 @@ class FinancialTransactionControllerTest {
 
     @MockitoBean
     private GetFinancialSummary getFinancialSummary;
+
+    @MockitoBean
+    private ConfirmTransaction confirmTransaction;
 
     private Category createCategory() {
         return new Category("Food", TransactionType.EXPENSE, false);
@@ -260,5 +263,40 @@ class FinancialTransactionControllerTest {
                         .param("endDate", "2026-11-01"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.status").value(400));
+    }
+
+    @Test
+    void shouldConfirmTransactionSuccessfully() throws Exception {
+        UUID previewId = UUID.randomUUID();
+        FinancialTransaction transaction = createTransaction();
+
+        when(confirmTransaction.execute(previewId))
+                .thenReturn(transaction);
+
+        mockMvc.perform(post("/api/transactions/confirm/{previewId}", previewId))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.description").value("Lunch"))
+                .andExpect(jsonPath("$.amount").value(35.50))
+                .andExpect(jsonPath("$.categoryName").value("Food"))
+                .andExpect(jsonPath("$.active").value(true));
+
+        verify(confirmTransaction).execute(previewId);
+    }
+
+    @Test
+    void shouldReturnNotFoundWhenTransactionPreviewDoesNotExist() throws Exception {
+        UUID previewId = UUID.randomUUID();
+
+        when(confirmTransaction.execute(previewId))
+                .thenThrow(new PendingTransactionPreviewNotFoundException(
+                        "Transaction preview not found or expired: " + previewId
+                ));
+
+        mockMvc.perform(post("/api/transactions/confirm/{previewId}", previewId))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.status").value(404))
+                .andExpect(jsonPath("$.title").value("Transaction Preview Not Found"));
+
+        verify(confirmTransaction).execute(previewId);
     }
 }
