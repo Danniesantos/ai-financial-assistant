@@ -1,6 +1,7 @@
 package com.financialassistant.ai_financial_assistant.infrastructure.ai.tools;
 
 import com.financialassistant.ai_financial_assistant.application.dto.FinancialSummary;
+import com.financialassistant.ai_financial_assistant.application.exception.InvalidDateRangeException;
 import com.financialassistant.ai_financial_assistant.application.usecase.transaction.GetFinancialSummary;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -76,6 +77,26 @@ class FinancialSummaryToolTest {
         ).isInstanceOf(java.time.format.DateTimeParseException.class);
 
         verifyNoInteractions(getFinancialSummary);
+    }
+
+    @Test
+    void shouldPropagateExceptionWhenDateRangeIsInvalid() {
+        LocalDate startDate = LocalDate.of(2026, 10, 31);
+        LocalDate endDate = LocalDate.of(2026, 10, 1);
+
+        when(getFinancialSummary.execute(startDate, endDate))
+                .thenThrow(new InvalidDateRangeException(
+                        "Start date must be before or equal to end date"
+                ));
+
+        assertThatThrownBy(() ->
+                financialSummaryTool.getFinancialSummary(
+                        "2026-10-31",
+                        "2026-10-01"
+                )
+        ).isInstanceOf(InvalidDateRangeException.class);
+
+        verify(getFinancialSummary).execute(startDate, endDate);
     }
 
 }

@@ -17,10 +17,21 @@ spring:
     enabled: true
 
   ai:
+    model:
+      audio:
+        transcription: openai
+
     openai:
       api-key: ${OPENAI_API_KEY}
+
       chat:
         model: gpt-5-mini
+
+      audio:
+        transcription:
+          model: whisper-1
+          language: pt
+          response-format: text
 
 management:
   endpoints:

@@ -3,15 +3,16 @@ package com.financialassistant.ai_financial_assistant.presentation.exception;
 import com.financialassistant.ai_financial_assistant.application.exception.AiProviderException;
 import com.financialassistant.ai_financial_assistant.application.exception.CategoryNotFoundException;
 import com.financialassistant.ai_financial_assistant.application.exception.FinancialTransactionNotFoundException;
+import com.financialassistant.ai_financial_assistant.application.exception.PendingTransactionPreviewNotFoundException;
 import com.financialassistant.ai_financial_assistant.domain.exception.DomainException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import org.springframework.http.converter.HttpMessageNotReadableException;
 
 import java.net.URI;
 import java.util.LinkedHashMap;
@@ -118,5 +119,21 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.SERVICE_UNAVAILABLE)
                 .body(problem);
+    }
+
+    @ExceptionHandler(PendingTransactionPreviewNotFoundException.class)
+    public ProblemDetail handlePendingTransactionPreviewNotFound(
+            PendingTransactionPreviewNotFoundException exception,
+            HttpServletRequest request
+    ) {
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
+                HttpStatus.NOT_FOUND,
+                exception.getMessage()
+        );
+
+        problemDetail.setTitle("Transaction Preview Not Found");
+        problemDetail.setInstance(URI.create(request.getRequestURI()));
+
+        return problemDetail;
     }
 }
