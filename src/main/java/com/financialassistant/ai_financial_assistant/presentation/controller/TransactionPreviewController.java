@@ -8,6 +8,10 @@ import com.financialassistant.ai_financial_assistant.presentation.dto.request.Co
 import com.financialassistant.ai_financial_assistant.presentation.dto.request.CreateFinancialTransactionRequest;
 import com.financialassistant.ai_financial_assistant.presentation.dto.response.FinancialTransactionResponse;
 import com.financialassistant.ai_financial_assistant.presentation.dto.response.TransactionPreviewResponse;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +20,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+@Tag(
+        name = "Transaction Preview",
+        description = "Endpoints for transaction preview and explicit confirmation"
+)
 @RestController
 @RequestMapping("/api/transactions")
 public class TransactionPreviewController {
@@ -31,6 +39,15 @@ public class TransactionPreviewController {
         this.confirmTransaction = confirmTransaction;
     }
 
+    @Operation(
+            summary = "Create a transaction preview",
+            description = "Prepares a transaction for review without persisting it."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Transaction preview created successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid transaction data"),
+            @ApiResponse(responseCode = "404", description = "Category not found")
+    })
     @PostMapping("/preview")
     public ResponseEntity<TransactionPreviewResponse> createPreview(
             @Valid @RequestBody CreateFinancialTransactionRequest request
@@ -45,6 +62,14 @@ public class TransactionPreviewController {
         return ResponseEntity.ok(TransactionPreviewResponse.from(preview));
     }
 
+    @Operation(
+            summary = "Confirm a transaction preview",
+            description = "Confirms a previously created preview and persists the transaction after explicit user confirmation."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Transaction confirmed and created successfully"),
+            @ApiResponse(responseCode = "404", description = "Preview not found or expired")
+    })
     @PostMapping("/confirm")
     public ResponseEntity<FinancialTransactionResponse> confirmTransaction(
             @Valid @RequestBody ConfirmTransactionRequest request
