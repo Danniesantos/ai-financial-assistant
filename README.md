@@ -1,8 +1,12 @@
 # AI Financial Assistant API
 
-An AI-powered financial assistant built with Java and Spring Boot. The project aims to help users manage financial transactions, understand their spending habits, and access financial assistance through text-based interactions and audio transcription.
+An AI-powered personal finance assistant built with Java, Spring Boot, and Spring AI.
 
-The application is designed with a focus on clean code, maintainability, automated testing, and separation of concerns.
+The application allows users to manage financial transactions, analyze income and expenses, and interact with an AI assistant through natural language. By integrating OpenAI models with financial tools, the assistant can retrieve transaction data, generate financial summaries, and prepare transactions for user confirmation before saving them.
+
+The project also supports audio transcription using OpenAI Whisper, allowing users to submit financial information through audio recordings.
+
+Built with Clean Architecture principles, the application emphasizes separation of concerns, domain-driven business rules, maintainability, and automated testing.
 
 ## Technologies
 
@@ -17,6 +21,8 @@ The application is designed with a focus on clean code, maintainability, automat
 - Hibernate
 - Flyway
 - Spring Boot Actuator
+- Springdoc OpenAPI / Swagger UI
+- JaCoCo
 - JUnit 5
 - Mockito
 - AssertJ
@@ -81,13 +87,11 @@ Use cases currently implemented:
 - Application port for audio transcription.
 - Use case for generating AI responses.
 - Use case for audio transcription.
-- Basic text-based integration with Spring AI and OpenAI.
+- Text-based integration with Spring AI and OpenAI.
 - Audio transcription integration using OpenAI Whisper.
 - Initial AI system instructions for personal finance assistance.
-- Financial tools for querying transactions, categories,
-  retrieving financial summaries, and preparing transaction previews.
-- Transaction preview workflow requiring explicit confirmation
-  before persistence.
+- Financial tools for querying transactions, categories, retrieving financial summaries, and preparing transaction previews.
+- Transaction preview workflow requiring explicit confirmation before persistence.
 
 ### Infrastructure Layer
 
@@ -107,7 +111,7 @@ Use cases currently implemented:
 
 ### REST API
 
-The application exposes REST endpoints for managing categories and financial transactions.
+The application exposes REST endpoints for managing categories, financial transactions, and AI assistant interactions.
 
 **Categories**
 
@@ -130,6 +134,13 @@ The application exposes REST endpoints for managing categories and financial tra
 | PATCH | `/api/transactions/{transactionId}/activate` | Activate a transaction |
 | PATCH | `/api/transactions/{transactionId}/deactivate` | Deactivate a transaction |
 
+**Transaction Preview**
+
+| Method | Endpoint | Description |
+|---|---|---|
+| POST | `/api/transactions/preview` | Prepare a transaction preview |
+| POST | `/api/transactions/confirm` | Confirm a transaction preview |
+
 **AI Assistant**
 
 | Method | Endpoint | Description |
@@ -143,6 +154,73 @@ The REST layer includes:
 - Separate request and response DTOs.
 - Centralized exception handling.
 - Consistent HTTP error responses using Spring ProblemDetail.
+- API documentation with Springdoc OpenAPI and Swagger UI.
+
+## API Documentation
+
+Interactive API documentation is available through Swagger UI.
+
+- **Swagger UI:** [http://localhost:8080/swagger-ui/index.html](http://localhost:8080/swagger-ui/index.html)
+- **OpenAPI specification:** [http://localhost:8080/v3/api-docs](http://localhost:8080/v3/api-docs)
+
+Start the application before accessing these URLs.
+
+## Usage Examples
+
+The following examples demonstrate how to interact with the AI assistant through the REST API.
+
+### 1. Chat with the AI Assistant
+
+Send a natural language prompt to the AI assistant.
+
+**Request**
+
+`POST /api/assistant/chat`
+
+```json
+{
+  "prompt": "How much did I spend this month?"
+}
+```
+
+**Example Response**
+
+```json
+{
+  "response": "Your total expenses for the selected period are..."
+}
+```
+
+The assistant can use registered financial tools to retrieve transaction data, query categories, and generate financial summaries based on the information stored in the database.
+
+### 2. Audio Transcription
+
+Upload an audio file to convert spoken financial information into text.
+
+**Request**
+
+`POST /api/assistant/transcribe`
+
+Content-Type: `multipart/form-data`
+
+Form field: `file`
+
+**Example using cURL**
+
+```bash
+curl -X POST http://localhost:8080/api/assistant/transcribe \
+  -F "file=@recording.m4a"
+```
+
+**Example Response**
+
+```json
+{
+  "transcription": "I spent 20 reais on coffee today."
+}
+```
+
+Audio transcription is powered by OpenAI Whisper.
 
 ## Testing
 
@@ -158,6 +236,23 @@ Automated tests cover the domain, application, infrastructure, and presentation 
 - **AI tool tests:** Validate tool behavior, parameter conversion, and use case delegation.
 - **AI tool integration tests:** Validate the financial summary tool execution path through the application, repository adapter, and PostgreSQL database.
 - **Audio transcription tests:** Validate audio transcription configuration, adapter behavior, and HTTP request handling.
+
+### Test Coverage
+
+JaCoCo is used to generate code coverage reports.
+
+- **Instruction coverage:** 98%
+- **Branch coverage:** 75%
+
+Generate the report with:
+
+```bash
+./gradlew clean test
+```
+
+The HTML report is available at:
+
+`build/reports/jacoco/test/html/index.html`
 
 ## Database
 
@@ -228,7 +323,7 @@ POSTGRES_PORT=5433
 OPENAI_API_KEY=your-openai-api-key
 ```
 
-Important: The `.env` file contains local configuration and must not be committed to Git.
+**Important:** The `.env` file contains local configuration and must not be committed to Git.
 
 Spring Boot does not automatically load `.env` files. On Windows PowerShell, load the variables into the current terminal session:
 
@@ -266,15 +361,21 @@ The project uses Spring Boot Actuator to expose a health endpoint:
 
 `http://localhost:8080/actuator/health`
 
-### 6. Run automated tests
+### 6. Access API documentation
+
+With the application running, open:
+
+`http://localhost:8080/swagger-ui/index.html`
+
+### 7. Run automated tests
 
 ```powershell
-.\gradlew.bat test
+.\gradlew.bat clean test
 ```
 
 Integration tests use Testcontainers and require Docker to be available.
 
-### 7. Build the application
+### 8. Build the application
 
 ```powershell
 .\gradlew.bat build
@@ -282,38 +383,37 @@ Integration tests use Testcontainers and require Docker to be available.
 
 ## Project Status
 
-The main application features have been implemented. The project is currently in the final review and documentation phase.
+<ins>Backend MVP: Completed.</ins>
+
+The backend implementation is complete for the current project scope and DIO challenge requirements.
 
 ### Completed
 
-- [x] Initial project configuration.
-- [x] PostgreSQL configuration with Docker Compose.
-- [x] Flyway configuration and database migrations.
-- [x] Domain layer implementation and unit tests.
-- [x] Application use cases and unit tests.
-- [x] Category and financial transaction management.
-- [x] Financial summary calculation and REST endpoint.
-- [x] Infrastructure persistence entities, mappers, and repository adapters.
-- [x] Persistence integration tests with Testcontainers.
-- [x] GitHub Actions CI workflow.
-- [x] REST API endpoints and centralized exception handling.
-- [x] AI assistant text endpoint.
-- [x] Spring AI and OpenAI adapter implementation.
-- [x] Financial summary, transaction query, and category query tools.
-- [x] Transaction preview tool with explicit confirmation workflow.
-- [x] AI tools registered with ChatClient.
-- [x] Audio transcription integration using OpenAI Whisper.
-- [x] Audio transcription REST endpoint and tests.
-- [x] Full automated test suite passing.
-- [x] Manual validation of core REST API operations.
+- Domain and application layers.
+- Financial transaction and category management.
+- Financial summaries and REST endpoints.
+- PostgreSQL persistence and Flyway migrations.
+- Clean Architecture implementation.
+- Spring AI integration with OpenAI.
+- AI assistant with financial tools.
+- Transaction preview and explicit confirmation workflow.
+- Audio transcription using OpenAI Whisper.
+- Automated tests across application layers.
+- JaCoCo test coverage reporting.
+- Swagger / OpenAPI documentation.
+- GitHub Actions CI pipeline.
+- Manual validation of core API operations, AI assistant interactions, and audio transcription.
 
-### Pending
+### Potential Future Improvements
 
-- [ ] Validate live Spring AI Tool Calling execution with the OpenAI model.
-- [ ] Perform final project review and documentation.
-- [ ] Prepare the project for final delivery.
+The current backend is complete and functional within the defined MVP scope. Future iterations may expand the project with additional capabilities, such as:
 
-**Note:** AI tools are implemented, registered with ChatClient, and covered by automated tests. Live model-driven Tool Calling has not yet been validated because a funded OpenAI API key is required. Audio transcription is implemented and tested with mocked provider responses; live transcription has not yet been validated.
+- **Frontend application:** Develop a web interface to interact with the API, manage financial transactions, visualize financial summaries, and communicate with the AI assistant.
+- **Data visualization:** Add dashboards and charts for income, expenses, and financial trends.
+- **User authentication and authorization:** Introduce user accounts and secure access to personal financial data.
+- **Multi-user support:** Extend the application to manage independent financial data for multiple users.
+
+These improvements are planned as possible future enhancements and are not required for the current backend MVP or DIO challenge delivery.
 
 ## Author
 
